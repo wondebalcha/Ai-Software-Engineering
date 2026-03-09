@@ -17,7 +17,7 @@ Requirements:
 
 - requirements.txt exists and is used during build (pip install -r requirements.txt)
 - pytest must be included/pinned in requirements.txt
-- The image must run tests by default (use: `CMD ["python", "-m", "pytest", "-v"]`).
+- The image must run tests by default (use: `CMD ["pytest", "-v"]`).
 - The build must install dependencies from `requirements.txt`.
 
 ### 2) requirements.txt (required)
@@ -32,6 +32,30 @@ Update this README to include:
 
 - how to run the tests locally,
 - how to build and run tests with Docker.
+
+## How to run tests locally
+
+1) (Recommended) Create and activate a virtual environment.
+
+2) Install pinned dependencies:
+
+`python -m pip install -r requirements.txt`
+
+3) Run the tests:
+
+`python -m pytest -v`
+
+## How to run tests with Docker
+
+Build the image:
+
+`docker build -t ai-experts-assignment-3 .`
+
+Note: the trailing `.` is required (it is the build context).
+
+Run the container (it runs the test suite by default):
+
+`docker run --rm ai-experts-assignment-3`
 
 ### 4) Find + fix a bug (required)
 
@@ -50,9 +74,11 @@ Your tasks:
 - Do not introduce extra tooling unless required.
 - You may add tests and the smallest code change needed to fix the bug.
 
-### 5) EXPLANATION.md (required)
+### 5) Explanation.md (required)
 
-Create `EXPLANATION.md` (max 250 words) containing:
+Create `Explanation.md` (max 250 words) containing:
+
+Note (Windows): this repo may show the file as `EXPLANATION.md` due to case-insensitive filenames.
 
 - **What was the bug?**
 - **Why did it happen?**
