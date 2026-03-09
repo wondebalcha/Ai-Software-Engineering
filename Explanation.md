@@ -1,15 +1,11 @@
 ## What was the bug?
-`Client.request(..., api=True)` failed to refresh OAuth2 tokens when `Client.oauth2_token` was a `dict`. In that case, no `Authorization` header was added to the prepared request.
+`Client.request(api=True)` did not refresh tokens when `oauth2_token` was a `dict`, so no `Authorization` header was added.
 
 ## Why did it happen?
-The refresh logic only handled two situations:
-- the token was missing (`None` / falsy), or
-- the token was an `OAuth2Token` instance that was expired.
+The refresh logic only handled `None` or expired `OAuth2Token` instances. Dictionary (`dict`) tokens were ignored.
 
-A `dict` token is truthy and not an `OAuth2Token`, so it skipped refresh and also skipped header-setting (which only runs for `OAuth2Token`).
+## Why does your fix solve it?
+Any non-`OAuth2Token` (including `dict`) now triggers a refresh. After refresh, `oauth2_token` is an `OAuth2Token`, so the header is set correctly.
 
-## Why does your fix actually solve it?
-The fix treats any non-`OAuth2Token` value (including `dict`) as invalid for API calls and forces a refresh. After refreshing, `oauth2_token` becomes an `OAuth2Token`, so the `Authorization` header is set deterministically.
-
-## What’s one realistic case / edge case your tests still don’t cover?
-If an `OAuth2Token` is close to expiring (e.g., within a small grace window) we still treat it as valid because we only check strict expiry. A production client often refreshes slightly before expiry to avoid race conditions.
+## Edge case not covered
+Tokens close to expiry are still treated as valid; a real client might refresh slightly early to avoid race conditions.
