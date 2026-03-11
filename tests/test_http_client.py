@@ -43,3 +43,38 @@ def test_api_request_refreshes_when_token_is_dict():
     resp = c.request("GET", "/me", api=True)
 
     assert resp["headers"].get("Authorization") == "Bearer fresh-token"
+
+
+def test_api_request_refreshes_when_token_is_expired():
+    c = Client()
+    c.oauth2_token = OAuth2Token(access_token="stale", expires_at=int(time.time()) - 1)
+
+    resp = c.request("GET", "/me", api=True)
+
+    assert resp["headers"].get("Authorization") == "Bearer fresh-token"
+
+
+def test_api_request_does_not_refresh_when_token_is_valid():
+    class SpyClient(Client):
+        def refresh_oauth2(self) -> None:  # pragma: no cover
+            raise AssertionError("refresh_oauth2 should not be called for a valid token")
+
+    c = SpyClient()
+    c.oauth2_token = OAuth2Token(access_token="ok", expires_at=int(time.time()) + 3600)
+
+    resp = c.request("GET", "/me", api=True)
+
+    assert resp["headers"].get("Authorization") == "Bearer ok"
+
+
+def test_non_api_request_does_not_refresh_when_token_is_missing():
+    class SpyClient(Client):
+        def refresh_oauth2(self) -> None:  # pragma: no cover
+            raise AssertionError("refresh_oauth2 should not be called when api=False")
+
+    c = SpyClient()
+    c.oauth2_token = None
+
+    resp = c.request("GET", "/me", api=False)
+
+    assert "Authorization" not in resp["headers"]
